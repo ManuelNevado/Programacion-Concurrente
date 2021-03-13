@@ -6,17 +6,18 @@
 
 
 public class Lock {
-	String last;
-	public Lock(String last) {
-		this.last=last;
+	
+	private long lastPID;
+	
+	public Lock(long l) {
+		this.lastPID=l;
 	}
 	
-	public void ban(String name) {
-		while(last==name);
-		
+	public void enter(long pid) {
+		while(lastPID!=pid);
 	}
 	
-	public void unBan(String name) {
-		last=name;
+	public void exit(long pid) {
+		lastPID=pid;
 	}
 }
