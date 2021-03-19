@@ -3,29 +3,39 @@
 public class Main {
     public static class MyTask implements Runnable {
 
-        // The count member variable is shared between multiple threads
-        // that are executing the same instance of the MyTask runnable.
+        private BakeryLock lock = new BakeryLock(2);
+        
         private int count = 0;
-
         @Override
         public void run() {
             String name = Thread.currentThread().getName();
             
             for (int i = 0; i < 10_000; i++) {
-            	if(name.contentEquals("+"))
+            	if(name.contentEquals("+")) {
+            		lock.lock(0);
             		this.count++;
-            	else
+            		lock.unlock(0);
+            	}
+            	else {
+            		lock.lock(1);
             		this.count--;
+            		lock.unlock(1);
+            	}
             }
             System.out.printf("[%s] Count: %d\n", name, this.count);
         }
     }
+    
+    public static void lanzarThreads(Thread mas, Thread menos, Lock lock) {
+		mas.start();
+		menos.start();
+    	
+    }
+    
     public static void main(String[] args) {
         Runnable myTask = new MyTask();
-
         Thread mas = new Thread(myTask, "+");
         Thread menos = new Thread(myTask, "-");
-        Lock lock = new Lock(mas.getId())
         mas.start();
         menos.start();
     }
