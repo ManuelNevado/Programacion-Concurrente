@@ -17,7 +17,7 @@ public class tieBreaker {
 	 void lock(int id) {
 		 flag[id].set(true);
 		 turn.set(id);
-		 while(turn.get() == id && flag[1-id].get());
+		 while(turn.get() == id && flag[nprocesos-1-id].get());
 	 }
 	 
 	  void unlock(int id) {
