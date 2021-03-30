@@ -3,7 +3,7 @@
 public class Main {
     public static class MyTask implements Runnable {
 
-        private BakeryLock lock = new BakeryLock(2);
+        private tieBreaker lock = new tieBreaker(2);
         
         private int count = 0;
         @Override
