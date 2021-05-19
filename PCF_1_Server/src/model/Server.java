@@ -1,30 +1,57 @@
 package model;
 
-import java.io.BufferedReader;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
 
-public class Server extends Conection{
-	
-	public Server() throws IOException {
-		super("servidor");
+public class Server{
+	private ServerSocket server = null;
+	private Socket sc = null;
+	private DataInputStream in;
+	private DataOutputStream out;
+ 	private int PUERTO = 5000;
+ 	private List<OyenteCliente> users;
+ 	
+ 	
+	public Server() throws IOException{
+		server = new ServerSocket(PUERTO);
+		users = new ArrayList<OyenteCliente>();
 	}
 	
-	public void wait4client() throws IOException{
-		cs = ss.accept();
-		serverOut = new DataOutputStream(cs.getOutputStream());
-		serverIn = new DataInputStream(cs.getInputStream());
+	public void wait4clients() throws IOException{
+		while(true) {
+			OyenteCliente oc=null;
+			sc = server.accept();
+			oc = new OyenteCliente(sc);
+			new Thread(oc).start();
+			users.add(oc);
+			PUERTO +=1;
+			server = new ServerSocket(PUERTO);
+		}
 	}
 	
-	public Boolean checkConnection() throws IOException {
-		serverOut.writeUTF("cnxdone?");
-		String in = serverIn.readUTF();
-		if(in.contentEquals("cnxdone"))
-			return true;
-		return false;
+	public void quitClient() throws IOException {
+		out.writeUTF("Adios!");
+		sc.close();
+	}
+	
+	public void talk(String s) throws IOException{
+		out.writeUTF(s);
+	}
+	
+	public void usersInfo() {
+		for(OyenteCliente oc : users) {
+			for(String s : oc.showFiles()) {
+				System.out.println(s+" ");
+			}
+			System.out.println('\n');
+		}
 	}
 	
 
 }
+ 

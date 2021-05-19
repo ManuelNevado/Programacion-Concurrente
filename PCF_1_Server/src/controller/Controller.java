@@ -7,23 +7,16 @@ public class Controller {
 	public static void main(String args[]) {
 		View view = new View("cmd");
 		Server server = null;
+		view.start();
+
 		try {
 			server = new Server();
-		} catch (IOException e) {
-			view.raiseException("Servidor no creado\n"+e.getMessage());
-		}
-		try {
-			server.wait4client();
-		}catch(Exception e) {
-
-			view.raiseException("Error esperando al cliente\n"+e.getMessage());
-		}
-		try {
-			if(server.checkConnection()) {
-				
+			while(true) {
+				server.wait4clients(); //Se queda parado haste que acepta un client. En la version distribuida crear thread con el sc
 			}
-		}catch(Exception e) {
-			view.raiseException("Error en la comprobacion de la conexion\n"+e.getMessage());
+		} catch (IOException e) {
+			view.raiseException("Servidor no creado\n"+e.getStackTrace());
 		}
+		
 	}
 }
