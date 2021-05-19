@@ -3,8 +3,10 @@ package model;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -35,8 +37,12 @@ public class OyenteCliente implements Runnable{
 		String list = in.readUTF();
 		files = trans.fromJson(list,new TypeToken<ArrayList<String>>(){}.getType());
 		clientID = in.readUTF();
-		//Locks
+		//Monitor
 		server.addInfo(clientID, files);
+		//Monitor
+		
+		//lock
+		server.addUser(clientID, sc);
 		//unlock
 		
 	}
@@ -44,13 +50,13 @@ public class OyenteCliente implements Runnable{
 	public void procesar(String s) throws IOException {
 		switch(s) {
 		case "download":
-			//DescargarFichero msg = new DescargarFichero("",false);
-			//msg = msg.toObj(s);
-			//indeedDownload(msg);
+			String fn = in.readUTF();
+			indeedDownload(fn);
+			break;
 		case "infoserver":
 			getInfoServer();
+			break;
 		}
-		
 	}
 	
 	@Override
@@ -73,15 +79,33 @@ public class OyenteCliente implements Runnable{
 	}
 	
 	private void getInfoServer() throws IOException {
-		//Semaforo
+		
 		String s = trans.toJson(server.getInfo());
-		//Salida de semaforo
+		
 		out.writeUTF(s);
 	}
 
-	private void indeedDownload(Msg msg) {
-		// TODO Auto-generated method stub
-		
+	private void indeedDownload(String filename) throws IOException {
+		String user="";
+		HashMap<String, ArrayList<String>> map = server.getInfo();
+		for(String id : map.keySet()) {
+			for(String fn : map.get(id)) {
+				if(filename.contentEquals(fn)) {
+					user = id;
+				}
+			}
+		}
+		try {
+			if(user.contentEquals(clientID)) {
+				InetAddress ip = server.getSocketFromUserID(user).getInetAddress();
+				String IP = trans.toJson(ip);
+				out.writeUTF(IP);
+			}else {
+				out.writeUTF("me");
+			}
+		}catch(NullPointerException e) {
+			out.writeUTF("null");
+		}
 	}
 
 }

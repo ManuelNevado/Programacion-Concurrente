@@ -15,6 +15,7 @@ import model.*;
 
 
 public class Controller {
+	static OyenteServidor os;
 	public static void main( String args[]) {
 		View view = new View("cmd");
 		Boolean exit = false;
@@ -29,8 +30,15 @@ public class Controller {
 				files.add(s);
 			}
 			view.notify_good("Introduce el puerto");
-			int port = view.getInt();
+			int port = 5000;
 			Client client = new Client(files,port,id);
+			os = new OyenteServidor(view,client);
+			new Thread(os).start();
+		} catch (IOException e) {
+			view.raiseException("Error al crear el cliente/n"+e.getStackTrace());
+		}
+	}
+			/*
 			client.init();//Comunicacion de la lista de ficheros del servidor con el cliente
 			String msg = null;
 			String ans = null;
@@ -47,6 +55,11 @@ public class Controller {
 						 ans = client.readUTF();
 						 HashMap<String,ArrayList<String>> map = toMap(ans);
 						 view.printMap(map);
+					 }else if(msg.contentEquals("descargar")) {
+						 String filename = view.getString();
+						 client.writeUTF(filename);//Enviamos el nombre del fichero que queremos descargar
+						 ans = client.readUTF();
+						 prepareDownload(ans);
 					 }
 				}
 			}
@@ -56,9 +69,10 @@ public class Controller {
 			view.raiseException("Error al crear el cliente/n"+e.getStackTrace());
 		}
 		view.exit();
-	}
+		*/
 	
-	public static HashMap<String,ArrayList<String>> toMap(String s){
+	
+	public HashMap<String,ArrayList<String>> toMap(String s){
 		Gson g = new Gson();
 		HashMap<String,ArrayList<String>> map = g.fromJson(s,new TypeToken<HashMap<String,ArrayList<String>>>(){}.getType());
 		return map;

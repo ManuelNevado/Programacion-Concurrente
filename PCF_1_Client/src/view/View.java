@@ -41,9 +41,7 @@ public class View {
 			s="infoserver";
 			break;
 		case 2:
-			print("Nombre del fichero");
-			String fn = getString();
-			s = "download."+fn;
+			s = "download";
 			break;
 		case 3:
 			break;
