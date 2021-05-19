@@ -1,6 +1,10 @@
 package view;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.Scanner;
+import model.*;
 
 public class View {
 	
@@ -26,6 +30,27 @@ public class View {
 		System.out.println(s);
 	}
 	
+	public String displayMenu() {
+		print("1- Consultar informacion del server\n"+
+			  "2- Descargar fichero\n"+
+			  "3- Salir");
+		int opt = getInt();
+		String s = null;
+		switch(opt) {
+		case 1:
+			s="infoserver";
+			break;
+		case 2:
+			print("Nombre del fichero");
+			String fn = getString();
+			s = "download."+fn;
+			break;
+		case 3:
+			break;
+		}
+		return s;
+	}
+	
 	public void start() {
 		print(TEXT_GREEN + "Iniciando cliente..." + TEXT_RESET);
 	}
@@ -48,6 +73,17 @@ public class View {
 	
 	public int getInt() {
 		return scanner.nextInt();
+	}
+	
+	public void printMap(HashMap<String,ArrayList<String>> map) {
+		for(String id : map.keySet()) {
+			String files="";
+			for(String f: map.get(id)) {
+				files+="\t"+f+"\n";
+			}
+			print("ID: "+id+"\n\tFILES: \n"+files);
+			
+		}
 	}
 	
 	

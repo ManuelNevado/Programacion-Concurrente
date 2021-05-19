@@ -21,22 +21,28 @@ public class Client{
     private List<String> files = null;
     private Gson trans = null;
     
-    public Client(ArrayList<String> files, int puerto) throws IOException{
+    public Client(ArrayList<String> files, int puerto,String id) throws IOException{
     	trans = new Gson();
     	sc = new Socket(HOST, puerto);
     	in = new DataInputStream (sc.getInputStream());
     	out = new DataOutputStream(sc.getOutputStream());
     	IP = sc.getInetAddress();
     	this.files = files;
+    	ID=id;
     }
     
     public void init() throws IOException {
     	String msg = trans.toJson(files);
     	out.writeUTF(msg);
+    	out.writeUTF(ID);
     }
     
     public String readUTF() throws IOException{
     	return in.readUTF();
+    }
+    
+    public void writeUTF(String s) throws IOException{
+    	out.writeUTF(s);
     }
     
     public void exit() throws IOException{

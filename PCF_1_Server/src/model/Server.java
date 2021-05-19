@@ -6,7 +6,9 @@ import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class Server{
 	private ServerSocket server = null;
@@ -14,23 +16,22 @@ public class Server{
 	private DataInputStream in;
 	private DataOutputStream out;
  	private int PUERTO = 5000;
- 	private List<OyenteCliente> users;
- 	
+ 	private HashMap<String,ArrayList<String>> info;
  	
 	public Server() throws IOException{
 		server = new ServerSocket(PUERTO);
-		users = new ArrayList<OyenteCliente>();
+		info = new HashMap<String, ArrayList<String>>();
 	}
 	
 	public void wait4clients() throws IOException{
 		while(true) {
 			OyenteCliente oc=null;
 			sc = server.accept();
-			oc = new OyenteCliente(sc);
+			oc = new OyenteCliente(sc,this);
 			new Thread(oc).start();
-			users.add(oc);
 			PUERTO +=1;
 			server = new ServerSocket(PUERTO);
+			
 		}
 	}
 	
@@ -43,13 +44,12 @@ public class Server{
 		out.writeUTF(s);
 	}
 	
-	public void usersInfo() {
-		for(OyenteCliente oc : users) {
-			for(String s : oc.showFiles()) {
-				System.out.println(s+" ");
-			}
-			System.out.println('\n');
-		}
+	public void addInfo(String id, ArrayList<String> files) {
+		info.put(id, files);
+	}
+	
+	public HashMap<String, ArrayList<String>> getInfo() {
+		return info;
 	}
 	
 
