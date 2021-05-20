@@ -1,0 +1,5 @@
+Puntos críticos
+Se han detectado los siguientes puntos críticos (...). Con el fin de gestionarlos se han empleado recursos como locks, semaphores y monitors, como se explica a continuación. 
+	Uso de Locks: Usamos la estrategia de cerrojos justa llamada Bakery_lock para 2 Threads
+	Uso de Semaforos: Usamos los semaforos que vienen ya implementados en java
+	Uso de Monitores: Usamos la palabra clave synchronized que lleva implementado por dentro como un monitor.

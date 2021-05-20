@@ -1,5 +1,6 @@
 package view;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -44,6 +45,7 @@ public class View {
 			s = "download";
 			break;
 		case 3:
+			s = "salir";
 			break;
 		}
 		return s;
@@ -62,7 +64,7 @@ public class View {
 	}
 	
 	public void notify_good(String s) {
-		print(TEXT_BLUE + s + TEXT_RESET);
+		print(TEXT_GREEN + s + TEXT_RESET);
 	}
 
 	public String getString() {
@@ -73,10 +75,10 @@ public class View {
 		return scanner.nextInt();
 	}
 	
-	public void printMap(HashMap<String,ArrayList<String>> map) {
+	public void printMap(HashMap<String,ArrayList<Integer>> map) {
 		for(String id : map.keySet()) {
 			String files="";
-			for(String f: map.get(id)) {
+			for(int f: map.get(id)) {
 				files+="\t"+f+"\n";
 			}
 			print("ID: "+id+"\n\tFILES: \n"+files);

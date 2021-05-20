@@ -11,12 +11,12 @@ public class Main {
             String name = Thread.currentThread().getName();
             
             for (int i = 0; i < 10_000; i++) {
-            	if(name.contentEquals("+")) {
+            	if(name.contentEquals("manu")) {
             		lock.lock(0);
             		this.count++;
             		lock.unlock(0);
             	}
-            	else {
+            	else if(name.contentEquals("paco")){
             		lock.lock(1);
             		this.count--;
             		lock.unlock(1);
