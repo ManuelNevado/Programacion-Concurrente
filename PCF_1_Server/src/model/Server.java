@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class Server{
 	private ServerSocket server = null;
@@ -19,23 +21,27 @@ public class Server{
  	private HashMap<String,ArrayList<Integer>> info;
  	private HashMap<String, Socket> usuario_socket;
  	private HashMap<String, Integer> usuario_descarga;
- 	private Semaphore mutex;
- 	private Bakery_lock lock;
+ 	private Semaphore mutex1;
+ 	private Semaphore mutex2;
+ 	private Lock lock;
+ 	private int contadorSem;
  	
 	public Server() throws IOException{
-		mutex = new Semaphore(1,true);
+		mutex1 = new Semaphore(1,true);
+		mutex2 = new Semaphore(1,true);
+		contadorSem = 0;
 		server = new ServerSocket(PUERTO);
 		info = new HashMap<String, ArrayList<Integer>>();
 		usuario_descarga = new HashMap<String,Integer>();
 		usuario_socket = new HashMap<String,Socket>();
-		lock = new Bakery_lock(2);
+		lock = new ReentrantLock(true);
 	}
 	
 	public void wait4clients() throws IOException{
 		while(true) {
 			OyenteCliente oc=null;
 			sc = server.accept();
-			oc = new OyenteCliente(sc,this,mutex,lock);
+			oc = new OyenteCliente(sc,this,mutex1,mutex2,contadorSem,lock);
 			new Thread(oc).start();
 			//PUERTO +=1;
 			//server = new ServerSocket(PUERTO);
@@ -66,6 +72,12 @@ public class Server{
 	
 	public int getPortFromUserID(String ID) {
 		return usuario_descarga.get(ID);
+	}
+	
+	public void removeUserFromServer(String ID) {
+		info.remove(ID);
+		usuario_socket.remove(ID);
+		usuario_socket.remove(ID);
 	}
 
 }

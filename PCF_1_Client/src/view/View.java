@@ -45,7 +45,7 @@ public class View {
 			s = "download";
 			break;
 		case 3:
-			s = "salir";
+			s = "exit";
 			break;
 		}
 		return s;

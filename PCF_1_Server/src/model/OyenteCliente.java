@@ -9,6 +9,7 @@ import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.locks.Lock;
 
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -23,18 +24,22 @@ public class OyenteCliente implements Runnable{
 	public Boolean end = null;
 	public String clientID;
 	private Server server;
-	private Semaphore mutex;
-	private Bakery_lock lock;
+	private Semaphore mutex1;
+	private Semaphore mutex2;
+	private Lock lock;
+	private int contador;
 	
-	public OyenteCliente(Socket sc, Server server, Semaphore mutex, Bakery_lock lock) throws IOException{
+	public OyenteCliente(Socket sc, Server server, Semaphore mutex1, Semaphore mutex2, int contador, Lock lock) throws IOException{
 		this.sc = sc;
 		in = new DataInputStream(sc.getInputStream());
 		out = new DataOutputStream(sc.getOutputStream());
 		trans = new Gson();
-		end = true;
+		end = false;
 		this.server = server;
-		this.mutex = mutex;
+		this.mutex1 = mutex1;
+		this.mutex2 = mutex2;
 		this.lock = lock;
+		this.contador = contador;
 	}
 	
 	
@@ -44,27 +49,23 @@ public class OyenteCliente implements Runnable{
 		files = trans.fromJson(list,new TypeToken<ArrayList<Integer>>(){}.getType());
 		clientID = in.readUTF();
 		int port = in.readInt();
-		//coger semaforo
+		//Escritura
 		try {
-			mutex.acquire();
+			mutex2.acquire();
 			server.addInfo(clientID, files);
-			mutex.release();
+			server.addUser(clientID, sc,port);
+			mutex2.release();
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
-		//soltar semaforo
 		
-		//lock
-		int idlock = 0;
-		if(Thread.currentThread().getName().contentEquals("paco")) idlock = 1;
-		lock.lock(idlock);
-		server.addUser(clientID, sc,port);
-		lock.unlock(idlock);
-		//unlock
+		
+		
+
 		
 	}
 	
-	public void procesar(String s) throws IOException {
+	public void procesar(String s) throws IOException, InterruptedException {
 		switch(s) {
 		case "download":
 			int fn = in.readInt();
@@ -75,6 +76,11 @@ public class OyenteCliente implements Runnable{
 			break;
 		case "update":
 			indeedUpdate();
+			break;
+		case "exit":
+			exit();
+			end = true;
+			break;
 		}
 		
 	}
@@ -83,13 +89,13 @@ public class OyenteCliente implements Runnable{
 	public void run(){
 		try {
 			init();//Lee los ficheros del cliente
-			while(end) {
+			while(!end) {
 				String line = in.readUTF();
 				procesar(line);
 			}
 			
 			
-		} catch (IOException e) {
+		} catch (IOException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
@@ -98,9 +104,23 @@ public class OyenteCliente implements Runnable{
 		return files;
 	}
 	
-	private void getInfoServer() throws IOException {		
+	private void getInfoServer() throws IOException, InterruptedException {		
 		String s = trans.toJson(server.getInfo());
+		//Lectura
+		mutex1.acquire();
+		contador++;
+		if(contador == 1) {
+			mutex2.acquire();
+		}
+		mutex1.release();
+		//****
 		out.writeUTF(s);
+		//****
+		mutex1.acquire();
+		contador--;
+		if(contador==0)
+			mutex2.release();
+		mutex1.release();
 	}
 
 	private void indeedDownload(int inte) throws IOException {
@@ -135,12 +155,27 @@ public class OyenteCliente implements Runnable{
 		files = trans.fromJson(list,new TypeToken<ArrayList<Integer>>(){}.getType());
 		clientID = in.readUTF();
 		try {
-			mutex.acquire();
+			//Escritura
+			mutex2.acquire();
 			server.addInfo(clientID, files);
-			mutex.release();
+			mutex2.release();
 		}catch(Exception e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public void exit() throws IOException, InterruptedException {
+		//Los lock estan para que solo un thread ejecute esta accion
+		lock.lock();
+		String id = in.readUTF();
+		//no puede borrarse y solicitarse informacion a la vez
+		//NO-Escritura
+		//Un borrado no deja de ser un tipo de escritura asi que es como si tuviera dos escritores 
+		//en el problema lectores escritores
+		mutex2.acquire();
+		server.removeUserFromServer(id);
+		mutex2.release();
+		lock.unlock();
 	}
 
 }

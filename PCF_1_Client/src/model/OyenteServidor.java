@@ -53,7 +53,9 @@ public class OyenteServidor implements Runnable{
 					 int port = client.readInt();//leer puerto
 					 prepareDownload(ip,port,name);
 				}else if( msg.contentEquals("exit")) {
+					client.writeUTF(msg);
 					exit = true;
+					client.writeUTF(client.getId());
 					client.exit();
 				}
 			}
